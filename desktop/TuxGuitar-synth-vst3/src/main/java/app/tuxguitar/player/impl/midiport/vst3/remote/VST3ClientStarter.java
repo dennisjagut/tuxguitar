@@ -1,5 +1,6 @@
 package app.tuxguitar.player.impl.midiport.vst3.remote;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +59,10 @@ public class VST3ClientStarter implements TGClientStarter {
 			for(int i = 0 ; i < cmdarray.length; i ++) {
 				cmdarray[i] = expressionResolver.resolve(cmdarray[i], new TGExpressionResolver.MapPropertyResolver(variables));
 			}
+			// tuxguitar.home.path is relative on Windows, the executable must not be resolved against the working dir
+			if( cmdarray.length > 0 ) {
+				cmdarray[0] = new File(cmdarray[0]).getAbsolutePath();
+			}
 			return cmdarray;
 		}
 		return null;
@@ -65,7 +70,7 @@ public class VST3ClientStarter implements TGClientStarter {
 
 	public static String resolveWorkingDir(TGContext context, String workingDir) {
 		if( workingDir != null ) {
-			return TGExpressionResolver.getInstance(context).resolve(workingDir);
+			return new File(TGExpressionResolver.getInstance(context).resolve(workingDir)).getAbsolutePath();
 		}
 		return null;
 	}
