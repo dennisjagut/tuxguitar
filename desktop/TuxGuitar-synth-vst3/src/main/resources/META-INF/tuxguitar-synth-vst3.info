@@ -1,0 +1,5 @@
+### Plugin Information ###
+plugin.name=TuxGuitar Synthesizer - VST3 extension
+plugin.description=VST3 audio processing for the TuxGuitar Synthesizer
+plugin.author=TuxGuitar contributors
+plugin.version=1.0

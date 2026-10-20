@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+		http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>tuxguitar-pom</artifactId>
+		<groupId>app.tuxguitar</groupId>
+		<version>9.99-SNAPSHOT</version>
+		<relativePath>../../../</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>tuxguitar-synth-vst3-windows-x86_64</artifactId>
+	<packaging>pom</packaging>
+	<name>${project.artifactId}</name>
+
+	<properties>
+		<tuxguitar-synth-vst3.path>${project.parent.relativePath}/TuxGuitar-synth-vst3</tuxguitar-synth-vst3.path>
+		<tuxguitar-synth-vst3.cxx.path>${tuxguitar-synth-vst3.path}/src/main/cxx</tuxguitar-synth-vst3.cxx.path>
+		<tuxguitar-synth-vst3.cxx.build.path>${project.build.directory}/cxx</tuxguitar-synth-vst3.cxx.build.path>
+		<tuxguitar-synth-vst3.client.name>tuxguitar-synth-vst3.exe</tuxguitar-synth-vst3.client.name>
+		<!-- set to true to build the java plugin only (e.g. on a machine without cmake / mingw-w64) -->
+		<vst3.native.skip>false</vst3.native.skip>
+	</properties>
+
+	<modules>
+		<module>${tuxguitar-synth-vst3.path}</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>compile-native</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<skip>${vst3.native.skip}</skip>
+							<target name="compile-native">
+								<exec executable="cmake" failonerror="true" >
+									<arg value="-S" />
+									<arg value="${tuxguitar-synth-vst3.cxx.path}" />
+									<arg value="-B" />
+									<arg value="${tuxguitar-synth-vst3.cxx.build.path}" />
+									<arg value="-DCMAKE_BUILD_TYPE=Release" />
+									<arg value="-DCMAKE_TOOLCHAIN_FILE=${basedir}/${tuxguitar-synth-vst3.cxx.path}/cmake/mingw-w64-x86_64.cmake" />
+								</exec>
+								<exec executable="cmake" failonerror="true" >
+									<arg value="--build" />
+									<arg value="${tuxguitar-synth-vst3.cxx.build.path}" />
+									<arg value="--config" />
+									<arg value="Release" />
+								</exec>
+							</target>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>native-module-copy</id>
+						<phase>package</phase>
+						<configuration>
+							<skip>${vst3.native.skip}</skip>
+							<target name="copy-files">
+								<mkdir dir="${project.build.directory}/build/vst3-client" />
+								<copy todir="${project.build.directory}/build/vst3-client">
+									<fileset file="${tuxguitar-synth-vst3.cxx.build.path}/${tuxguitar-synth-vst3.client.name}" />
+								</copy>
+								<mkdir dir="${project.build.directory}/build/dist" />
+								<copy todir="${project.build.directory}/build/dist">
+									<fileset file="${tuxguitar-synth-vst3.path}/tuxguitar-synth-vst3.cfg" />
+								</copy>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>native-module-copy-libs</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>tuxguitar-synth-vst3</artifactId>
+									<destFileName>tuxguitar-synth-vst3.jar</destFileName>
+									<outputDirectory>${project.build.directory}/build/share/plugins</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
