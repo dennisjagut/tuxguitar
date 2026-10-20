@@ -1,6 +1,7 @@
 package app.tuxguitar.player.impl.midiport.vst3;
 
 import app.tuxguitar.midi.synth.TGMidiProcessor;
+import app.tuxguitar.player.base.MidiControllers;
 import app.tuxguitar.player.impl.midiport.vst3.remote.command.VST3Event;
 import app.tuxguitar.util.TGContext;
 
@@ -28,6 +29,9 @@ public class VST3MidiProcessor extends VST3AudioProcessorWrapper implements TGMi
 
 	@Override
 	public void sendControlChange(int controller, int value) {
-		this.queueEvent(new VST3Event(VST3Event.CONTROL_CHANGE, controller, value));
+		// volume and balance are applied by TGSynthChannelProcessor after the whole chain
+		if( controller != MidiControllers.VOLUME && controller != MidiControllers.BALANCE ) {
+			this.queueEvent(new VST3Event(VST3Event.CONTROL_CHANGE, controller, value));
+		}
 	}
 }
